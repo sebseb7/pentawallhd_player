@@ -3,8 +3,9 @@
 
 #include "stm32f4xx.h"
 
-#define LED_WIDTH 72
-#define LED_HEIGHT 32
+#define PENTAWALLHD
+#define LED_WIDTH 24
+#define LED_HEIGHT 24
 
 void TimingDelay_Decrement(void);
 void Delay(__IO uint32_t nTime);

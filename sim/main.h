@@ -6,9 +6,10 @@
 enum {
 	LED_WIDTH = 24,
 	LED_HEIGHT = 24,
-	ZOOM = 30
+	ZOOM = 15
 };
 
+#define PENTAWALLHD
 #define SIMULATOR
 
 #define CONSTRUCTOR_ATTRIBUTES	__attribute__((constructor));
