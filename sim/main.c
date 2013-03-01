@@ -9,9 +9,9 @@
 #include <string.h>
 #include<sys/time.h>
 
+#include "keyboard.h"
 
 
-#define FRAMETIME 29
 
 int sdlpause = 0;
 
@@ -20,13 +20,22 @@ int sdlpause = 0;
 
 int animationcount = 0;
 int appcount = 0;
+int current_animation = 0;
+
+
+unsigned long long int get_clock(void)
+{
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (unsigned long long int)tv.tv_usec + 1000000*tv.tv_sec;
+}
 
 struct animation {
 	init_fun init_fp;
 	tick_fun tick_fp;
 	deinit_fun deinit_fp;
-	int duration;
-	int min_delay;
+	unsigned int duration;
+	unsigned int min_delay;
 } animations[MAX_ANIMATIONS];
 
 
@@ -34,7 +43,7 @@ struct app {
 	init_fun init_fp;
 	tick_fun tick_fp;
 	deinit_fun deinit_fp;
-	int min_delay;
+	unsigned int min_delay;
 } apps[MAX_APPS];
 
 
@@ -54,6 +63,19 @@ void setLedXY(uint8_t x, uint8_t y, uint8_t red,uint8_t green,uint8_t blue) {
 	leds[y][x][3] = 1;
 }
 
+void setLedAll(uint8_t red,uint8_t green,uint8_t blue) 
+{
+	int x, y;
+	for(x = 0; x < LED_WIDTH; x++) {
+		for(y = 0; y < LED_HEIGHT; y++) {
+			leds[y][x][0] = red;
+			leds[y][x][1] = green;
+			leds[y][x][2] = blue;
+			leds[y][x][3] = 1;
+		}
+	}
+}
+
 void invLedXY(uint8_t x, uint8_t y) {
 	if (x >= LED_WIDTH) return;
 	if (y >= LED_HEIGHT) return;
@@ -68,6 +90,11 @@ void getLedXY(uint8_t x, uint8_t y,uint8_t* red, uint8_t* green, uint8_t* blue) 
 	*red = leds[y][x][0];
 	*green = leds[y][x][1];
 	*blue = leds[y][x][2];
+}
+
+void setDelay(unsigned int t)
+{
+	animations[current_animation].min_delay = t;
 }
 
 void registerAnimation(init_fun init,tick_fun tick, deinit_fun deinit,uint16_t t, uint16_t count)
@@ -106,6 +133,110 @@ void fillRGB(uint8_t r,uint8_t g, uint8_t b)
 		}
 	}
 }
+void button(uint8_t nr)
+{
+	printf("button %i\n",nr);
+	if(nr < animationcount)
+	{
+		animations[current_animation].deinit_fp();
+		current_animation = nr;
+		animations[current_animation].init_fp();
+	}
+}
+
+void pollKeyboard(void)
+{
+	KeyboardEvent e;
+    
+	// controller ranges:
+	const int chan_begin= 0, chan_end= 7;
+	const int chana_begin= 16, chana_end= 23;
+
+	while(keyboard_poll(&e)) 
+	{
+
+		
+		printf("%d %d %d\n", e.x, e.y, e.type);
+//		fflush(stdout);
+		
+		if(e.type>>4 == 0x0b)	// control change
+		{
+			if( (e.x>=chan_begin) && (e.x<=chan_end) )
+				chan[e.x-chan_begin]= e.y;
+			else if( (e.x>=chana_begin) && (e.x<=chana_end) )
+				chana[e.x-chana_begin]= e.y;
+			else if((e.x >= 32)&&(e.x <= 39)&&(e.y == 127))
+			{
+		
+				if(e.x < 32+animationcount)
+				{
+					for(uint8_t i = 32;i <= 39;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					for(uint8_t i = 48;i <= 55;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					for(uint8_t i = 64;i <= 71;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					keyboard_send(176,e.x,127);
+				}
+				
+				
+				button(e.x-32);
+			}
+			else if((e.x >= 48)&&(e.x <= 55)&&(e.y == 127))
+			{
+		
+				if(e.x < 40+animationcount)
+				{
+					for(uint8_t i = 32;i <= 39;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					for(uint8_t i = 48;i <= 55;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					for(uint8_t i = 64;i <= 71;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					keyboard_send(176,e.x,127);
+				}
+				
+				
+				button(e.x-40);
+			}
+			else if((e.x >= 64)&&(e.x <= 71)&&(e.y == 127))
+			{
+		
+				if(e.x < 48+animationcount)
+				{
+					for(uint8_t i = 32;i <= 39;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					for(uint8_t i = 48;i <= 55;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					for(uint8_t i = 64;i <= 71;i++)
+					{
+						keyboard_send(176,i,0);
+					}
+					keyboard_send(176,e.x,127);
+				}
+				
+				
+				button(e.x-48);
+			}
+		}
+	}
+}
 
 
 int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unused__))) {
@@ -114,16 +245,25 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 
 	srand(time(NULL));
 
+	keyboard_init();
+	for(uint8_t i = 32;i <= 39;i++)
+	{
+		keyboard_send(176,i,0);
+	}
+	keyboard_send(176,32,127);
 
-	int current_animation = 0;
+	chana[7]=127;
+	chana[6]=127;
+	chana[5]=127;
+	chana[4]=127;
 
 	screen = SDL_SetVideoMode(LED_WIDTH*ZOOM,LED_HEIGHT*ZOOM,32, SDL_SWSURFACE | SDL_DOUBLEBUF);
 
 
 	animations[current_animation].init_fp();
 	
-	int tick_count = 0;
-	int running = 1;
+	unsigned int tick_count = 0;
+	unsigned int running = 1;
 	//unsigned long long int startTime = get_clock();
 	Uint32 lastFrame = SDL_GetTicks(); 
 
@@ -169,6 +309,7 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 			}
 		}
 
+		pollKeyboard();
 		animations[current_animation].tick_fp();
 
 
@@ -187,7 +328,7 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 					SDL_FillRect(
 						screen, 
 						&rect, 
-						SDL_MapRGB(screen->format, leds[y][x][0],leds[y][x][1],leds[y][x][2])
+						SDL_MapRGB(screen->format, leds[y][x][0]*(chana[7]/127.0f)*(chana[4]/127.0f),leds[y][x][1]*(chana[7]/127.0f)*(chana[5]/127.0f),leds[y][x][2]*(chana[7]/127.0f)*(chana[6]/127.0f))
 					);
 
 					leds[y][x][3] = 0;
@@ -203,9 +344,9 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 
 		Uint32 now = SDL_GetTicks(); 
 
-		if( (now - lastFrame) < FRAMETIME )
+		if( (now - lastFrame) < animations[current_animation].min_delay )
 		{
-			SDL_Delay(FRAMETIME - (now - lastFrame));
+			SDL_Delay(animations[current_animation].min_delay - (now - lastFrame));
 		}
 		lastFrame = SDL_GetTicks();
 

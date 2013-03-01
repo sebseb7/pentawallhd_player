@@ -3,7 +3,7 @@ UNAME := $(shell uname)
 COMPILER = gcc
 
 
-FLAGS= -I. -I../firmware --std=gnu99 -Wall  -funsigned-char -Wundef -Wsign-compare  -Wstrict-prototypes  -fsingle-precision-constant 
+FLAGS= -I. -I../firmware -Ilibs -lportmidi --std=gnu99 -Wall  -funsigned-char -Wundef -Wsign-compare  -Wstrict-prototypes  -fsingle-precision-constant 
 LDFLAGS=
 BINEXT=
 
@@ -29,10 +29,11 @@ endif
 SOURCES=$(wildcard ../animations/*.c)
 BINARIES=$(SOURCES:../animations/%.c=%$(BINEXT))
 
-LIB_SOURCES=$(wildcard ../firmware/libs/*.c ../animations/lib/*.c)
-LIB_HEADERS=$(wildcard ../firmware/libs/*.h ../animations/lib/*.h)
+LIB_SOURCES=$(wildcard ../firmware/libs/*.c ../animations/lib/*.c libs/*.c)
+LIB_HEADERS=$(wildcard ../firmware/libs/*.h ../animations/lib/*.h libs/*.h)
 
-all: $(BINARIES) _all_animations
+#all: $(BINARIES) _all_animations
+all: all_animations
 
 clean:
 	rm -f ${BINARIES} _all_animations
@@ -41,7 +42,7 @@ clean:
 	@echo "  \033[1;34mCompile\033[0m $< -> \033[1;33m $@\033[0m "
 	@$(COMPILER) $(FLAGS) main.c $(LIB_SOURCES) $(LDFLAGS) $< -o $@ -I. 
 
-_all_animations: $(SOURCES) $(LIB_SOURCES) $(LIB_HEADERS) main.c main.h Makefile 
+all_animations: $(SOURCES) $(LIB_SOURCES) $(LIB_HEADERS) main.c main.h Makefile 
 	@echo "  \033[1;34mCompile all animations \033[0m -> \033[1;33m _all_animations \033[0m"
 	@$(COMPILER) -DFULL=1 $(FLAGS) $(LIB_SOURCES) $(SOURCES) $(LDFLAGS) main.c -o _all_animations -I. 
 

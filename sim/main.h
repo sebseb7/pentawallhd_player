@@ -6,7 +6,7 @@
 enum {
 	LED_WIDTH = 24,
 	LED_HEIGHT = 24,
-	ZOOM = 15
+	ZOOM = 30
 };
 
 #define PENTAWALLHD
@@ -30,8 +30,15 @@ int sdlpause;
 
 void registerAnimation(init_fun init,tick_fun tick,deinit_fun deinit, uint16_t t, uint16_t duration);
 void setLedXY(uint8_t x,uint8_t  y, uint8_t r,uint8_t g,uint8_t b);
+void setLedAll(uint8_t r,uint8_t g,uint8_t b);
 void invLedXY(uint8_t x,uint8_t  y);
 void Delay(uint16_t t);
 void getLedXY(uint8_t x, uint8_t y, uint8_t* red, uint8_t* green, uint8_t* blue);
+void setDelay(unsigned int t);
+
+unsigned long long int get_clock(void);
+
+uint8_t chan[16], chana[16];
+
 #endif
 

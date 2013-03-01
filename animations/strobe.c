@@ -1,0 +1,63 @@
+#include <stdlib.h>
+#include "main.h"
+#include <stdio.h>
+#include <math.h>
+#include "libs/math.h"
+
+static uint16_t a = 0;
+
+static uint8_t tick(void) {
+
+	if(a==0)
+	{
+		setLedAll(chan[2]*2,chan[3]*2,chan[4]*2);
+	}
+	if(a==1)
+	{
+		setLedAll(0,0,0);
+	}
+	if(a==2)
+	{
+		setLedAll(chan[5]*2,chan[6]*2,chan[7]*2);
+	}
+	if(a==3)
+	{
+		setLedAll(0,0,0);
+	}
+
+	setDelay(chan[0]);
+
+	a+=1;
+	if(a==5)
+	{
+		a=0;
+	}
+	return 0;
+}
+
+static void init(void)
+{
+	a = 0;
+	chan[0]=29;
+	chan[1]=29;
+	chan[2]=127;
+	chan[3]=0;
+	chan[4]=0;
+	chan[5]=0;
+	chan[6]=0;
+	chan[7]=127;
+}
+static void deinit(void)
+{
+}
+
+
+
+static void constructor(void) CONSTRUCTOR_ATTRIBUTES
+void constructor(void) {
+	registerAnimation(init,tick,deinit, 29, 3000);
+}
+
+
+
+

@@ -9,10 +9,10 @@ static uint16_t a = 0;
 static uint8_t tick(void) {
 
 	
-	float x0 = sini(a*40)/2730.0f;
-	float y0 = sini((a*80)+0x1000)/2730.0f;
-	float x1 = sini(a*60)/2730.0f;
-	float y1 = sini((a*30)+0x1000)/2730.0f;
+	float x0 = sini(a*4)/2730.0f;
+	float y0 = sini((a*8)+0x1000)/2730.0f;
+	float x1 = sini(a*6)/2730.0f;
+	float y1 = sini((a*3)+0x1000)/2730.0f;
 	uint8_t x, y;
 
 	for(y = 0; y < LED_HEIGHT; y++) 
@@ -23,13 +23,13 @@ static uint8_t tick(void) {
 			int dist2 = sini(pythagorasf(x1-x,y1-y)*2048)>>3 ;
 			setLedXY(
 				x,y,
-				sini(dist+dist2+(a*200))>>8,
-				sini(dist+dist2+(a*256))>>8,
-				sini(dist+dist2+(a*290))>>8
+				sini(dist+dist2+(a*20))>>8,
+				sini(dist+dist2+(a*25))>>8,
+				sini(dist+dist2+(a*29))>>8
 			);
 		}
 	}
-	a+=1;
+	a+=chan[0];
 	if(a==0x4000)
 	{
 		a=0;
@@ -40,6 +40,7 @@ static uint8_t tick(void) {
 static void init(void)
 {
 	a = 0;
+	chan[0]=1;
 }
 static void deinit(void)
 {
@@ -49,7 +50,7 @@ static void deinit(void)
 
 static void constructor(void) CONSTRUCTOR_ATTRIBUTES
 void constructor(void) {
-	registerAnimation(init,tick,deinit, 4, 3000);
+	registerAnimation(init,tick,deinit, 29, 3000);
 }
 
 
