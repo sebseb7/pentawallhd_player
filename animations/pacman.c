@@ -254,6 +254,16 @@ static void movebot(struct bot_t* bot)
 		option_count=1;
 		options[0]=1;
 	}
+	else if(look(bot->pos,rotate_left(bot->orientation)))
+	{
+		option_count=1;
+		options[0]=2;
+	}
+	else if(look(bot->pos,rotate_right(bot->orientation)))
+	{
+		option_count=1;
+		options[0]=3;
+	}
 
 
 	int selected =	rand()%option_count;
