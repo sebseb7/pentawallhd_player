@@ -2,14 +2,6 @@
 #include "main.h"
 #include <stdio.h>
 
-//#include "libs/mcugui/text.h"
-
-enum {
-	F_WALL,
-	F_DOOR,
-	F_FLOR
-};
-
 
 static const char initial_field[21][21] = {
 	{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -38,6 +30,10 @@ static const char initial_field[21][21] = {
 static char field_dots[21][21];
 static char field_pups[21][21];
 
+static const int bot_r[4] = {255,128,255,0};
+static const int bot_g[4] = {0,0,128,128};
+static const int bot_b[4] = {128,255,0,255};
+
 struct pos_t
 {
 	int x;
@@ -48,12 +44,10 @@ struct bot_t
 {
 	struct pos_t pos;
 	int orientation;
+	int dying;
 };
 
-static struct bot_t bot1;
-static struct bot_t bot2;
-static struct bot_t bot3;
-static struct bot_t bot4;
+static struct bot_t bots[4];
 static struct bot_t player;
 
 #define DOOR_X 8
@@ -66,18 +60,18 @@ static int lives = 3;
 
 static void init(void)
 {
-	bot1.pos.x = 7;
-	bot1.pos.y = 10;
-	bot1.orientation=1;
-	bot2.pos.x = 9;
-	bot2.pos.y = 10;
-	bot2.orientation=1;
-	bot3.pos.x = 9;
-	bot3.pos.y = 9;
-	bot3.orientation=1;
-	bot4.pos.x = 9;
-	bot4.pos.y = 11;
-	bot4.orientation=1;
+	bots[0].pos.x = 7;
+	bots[0].pos.y = 10;
+	bots[0].orientation=1;
+	bots[1].pos.x = 9;
+	bots[1].pos.y = 10;
+	bots[1].orientation=1;
+	bots[2].pos.x = 9;
+	bots[2].pos.y = 9;
+	bots[2].orientation=1;
+	bots[3].pos.x = 9;
+	bots[3].pos.y = 11;
+	bots[3].orientation=1;
 	player.pos.x = 15;
 	player.pos.y = 10;
 	player.orientation=1;
@@ -222,6 +216,11 @@ static int look(struct pos_t pos,int orientation)
 static void movebot(struct bot_t* bot)
 {
 
+	if(bot->dying > 0)
+	{
+		return;
+	}
+
 	struct pos_t target;
 
 	int option_count = 0;
@@ -300,10 +299,8 @@ static void eat(struct pos_t pos)
 	{
 		field_pups[pos.x][pos.y]=0;
 		pupmode=100;
-		bot1.orientation = rotate_full(bot1.orientation);
-		bot2.orientation = rotate_full(bot2.orientation);
-		bot3.orientation = rotate_full(bot3.orientation);
-		bot4.orientation = rotate_full(bot4.orientation);
+		for(int i =0;i<3;i++)
+			bots[i].orientation = rotate_full(bots[i].orientation);
 	}
 }
 
@@ -320,70 +317,22 @@ static int check_collision(struct bot_t *bot,struct bot_t *player)
 
 static void collision_check(void)
 {
-	if(check_collision(&bot1,&player))
-	{
-		if(pupmode)
+	for(int i =0;i<3;i++)
+		if(check_collision(&bots[i],&player))
 		{
-			bot1.pos.x=9;
-			bot1.pos.y=9;
-		}
-		else
-		{
-			if(hurt==0)
+			if(pupmode)
 			{
-				lives--;
-				hurt = 30;
+				bots[i].dying=10;
+			}
+			else
+			{
+				if(hurt==0)
+				{
+					lives--;
+					hurt = 30;
+				}
 			}
 		}
-	}
-	if(check_collision(&bot2,&player))
-	{
-		if(pupmode)
-		{
-			bot2.pos.x=9;
-			bot2.pos.y=9;
-		}
-		else
-		{
-			if(hurt==0)
-			{
-				lives--;
-				hurt = 30;
-			}
-		}
-	}
-	if(check_collision(&bot3,&player))
-	{
-		if(pupmode)
-		{
-			bot3.pos.x=9;
-			bot3.pos.y=9;
-		}
-		else
-		{
-			if(hurt==0)
-			{
-				lives--;
-				hurt = 30;
-			}
-		}
-	}
-	if(check_collision(&bot4,&player))
-	{
-		if(pupmode)
-		{
-			bot4.pos.x=9;
-			bot4.pos.y=9;
-		}
-		else
-		{
-			if(hurt==0)
-			{
-				lives--;
-				hurt = 30;
-			}
-		}
-	}
 
 }
 
@@ -415,47 +364,57 @@ static uint8_t tick(void) {
 	if(door==0)
 		set_block(DOOR_X,DOOR_Y,64,0,96);
 	
+	for(int i = 0;i<3;i++)
+	{
+		int r = bot_r[i];
+		int g = bot_g[i];
+		int b = bot_b[i];
 
-	if(pupmode>20)
-	{
-		if(pupmode%2)
+	
+		if((bots[i].dying%2)==1)
 		{
-			set_block(bot1.pos.x,bot1.pos.y,64,32,148);
-			set_block(bot2.pos.x,bot2.pos.y,64,32,148);
-			set_block(bot3.pos.x,bot3.pos.y,64,32,148);
-			set_block(bot4.pos.x,bot4.pos.y,64,32,148);
+			r=255;
+			g=255;
+			b=255;
 		}
-		else
+		else if(pupmode>20)
 		{
-			set_block(bot1.pos.x,bot1.pos.y,32,64,148);
-			set_block(bot2.pos.x,bot2.pos.y,32,64,148);
-			set_block(bot3.pos.x,bot3.pos.y,32,64,148);
-			set_block(bot4.pos.x,bot4.pos.y,32,64,148);
+			if(pupmode%2)
+			{
+				r = 64;
+				g = 32;
+				b = 148;
+			}
+			else
+			{
+				r=32;
+				g=64;
+				b=148;
+			}
 		}
-	}
-	else if(pupmode)
-	{
-		if(pupmode%2)
+		else if(pupmode)
 		{
-			set_block(bot1.pos.x,bot1.pos.y,64,32,148);
-			set_block(bot2.pos.x,bot2.pos.y,64,32,148);
-			set_block(bot3.pos.x,bot3.pos.y,64,32,148);
-			set_block(bot4.pos.x,bot4.pos.y,64,32,148);
+			if(pupmode%2)
+			{
+				r = 64;
+				g = 32;
+				b = 148;
+			}
 		}
-		else
+		set_block(bots[i].pos.x,bots[i].pos.y,r,g,b);
+	
+	
+	
+		if(bots[i].dying > 1)
 		{
-			set_block(bot1.pos.x,bot1.pos.y,255,0,128);
-			set_block(bot2.pos.x,bot2.pos.y,128,0,255);
-			set_block(bot3.pos.x,bot3.pos.y,255,128,0);
-			set_block(bot4.pos.x,bot4.pos.y,0,128,255);
+			bots[i].dying--;
 		}
-	}
-	else
-	{
-		set_block(bot1.pos.x,bot1.pos.y,255,0,128);
-		set_block(bot2.pos.x,bot2.pos.y,128,0,255);
-		set_block(bot3.pos.x,bot3.pos.y,255,128,0);
-		set_block(bot4.pos.x,bot4.pos.y,0,128,255);
+		if(bots[i].dying == 1)
+		{
+			bots[i].dying=0;
+			bots[i].pos.x=9;
+			bots[i].pos.y=9;
+		}
 	}
 
 	if(hurt%2)
@@ -478,10 +437,10 @@ static uint8_t tick(void) {
 	}
 	else
 	{
-		if((x%7) == 0) movebot(&bot1);
-		if((x%8) == 0) movebot(&bot2);
-		if((x%9) == 0) movebot(&bot3);
-		if((x%10) == 0) movebot(&bot4);
+		if((x%7) == 0) movebot(&bots[0]);
+		if((x%8) == 0) movebot(&bots[1]);
+		if((x%9) == 0) movebot(&bots[2]);
+		if((x%10) == 0) movebot(&bots[3]);
 	}
 
 
