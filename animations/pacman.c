@@ -299,7 +299,7 @@ static void eat(struct pos_t pos)
 	{
 		field_pups[pos.x][pos.y]=0;
 		pupmode=100;
-		for(int i =0;i<3;i++)
+		for(int i =0;i<4;i++)
 			bots[i].orientation = rotate_full(bots[i].orientation);
 	}
 }
@@ -317,14 +317,14 @@ static int check_collision(struct bot_t *bot,struct bot_t *player)
 
 static void collision_check(void)
 {
-	for(int i =0;i<3;i++)
+	for(int i =0;i<4;i++)
 		if(check_collision(&bots[i],&player))
 		{
 			if(pupmode)
 			{
 				if(bots[i].dying==0)
 				{
-					bots[i].dying=10;
+					bots[i].dying=25;
 				}
 			}
 			else
@@ -367,7 +367,7 @@ static uint8_t tick(void) {
 	if(door==0)
 		set_block(DOOR_X,DOOR_Y,64,0,96);
 	
-	for(int i = 0;i<3;i++)
+	for(int i = 0;i<4;i++)
 	{
 		int r = bot_r[i];
 		int g = bot_g[i];
