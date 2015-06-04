@@ -322,7 +322,10 @@ static void collision_check(void)
 		{
 			if(pupmode)
 			{
-				bots[i].dying=10;
+				if(bots[i].dying==0)
+				{
+					bots[i].dying=10;
+				}
 			}
 			else
 			{
