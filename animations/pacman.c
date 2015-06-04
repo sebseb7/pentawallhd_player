@@ -199,6 +199,26 @@ static int rotate_full(int orientation)
 	}
 }
 
+static int look(struct pos_t pos,int orientation)
+{
+
+	struct pos_t target;
+
+	target = translate(pos,orientation);
+
+	if((player.pos.x == target.x)&&(player.pos.y == target.y))
+	{
+		return 1;
+	}
+	if(initial_field[target.x][target.y] == 0)
+	{
+		return 0;
+	}
+	return look(target,orientation);
+
+}
+
+
 static void movebot(struct bot_t* bot)
 {
 
@@ -229,6 +249,11 @@ static void movebot(struct bot_t* bot)
 		return;
 	}
 
+	if(look(bot->pos,bot->orientation))
+	{
+		option_count=1;
+		options[0]=1;
+	}
 
 
 	int selected =	rand()%option_count;
@@ -280,6 +305,7 @@ static int check_collision(struct bot_t *bot,struct bot_t *player)
 	}
 	return 0;
 }
+
 
 
 static void collision_check(void)
@@ -372,7 +398,7 @@ static uint8_t tick(void) {
 			}
 			if(initial_field[x][y]==0)
 			{
-				set_block(x,y,0,0,128);
+				set_block(x,y,0,0,200);
 			}
 		}
 
@@ -437,7 +463,7 @@ static uint8_t tick(void) {
 	}
 
 
-	if((pupmode > 1)&&(x%2))
+	if((pupmode)&&(x%3))
 	{
 	}
 	else
