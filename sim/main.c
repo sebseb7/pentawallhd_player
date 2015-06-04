@@ -133,6 +133,19 @@ void fillRGB(uint8_t r,uint8_t g, uint8_t b)
 		}
 	}
 }
+void lcdFillRGB(uint8_t r,uint8_t g , uint8_t b)
+{
+	int x, y;
+
+	for(x = 0; x < LED_WIDTH; x++) {
+		for(y = 0; y < LED_HEIGHT; y++) {
+			leds[y][x][0]=r;
+			leds[y][x][1]=g;
+			leds[y][x][2]=b;
+			leds[y][x][3]=1;
+		}
+	}
+}
 void button(uint8_t nr)
 {
 	printf("button %i\n",nr);
@@ -238,6 +251,44 @@ void pollKeyboard(void)
 	}
 }
 
+static int hatposition=SDL_HAT_CENTERED;
+
+
+int joy_is_up(void)
+{
+	if(hatposition&SDL_HAT_UP)
+	{
+		return 1;
+	}
+	return 0;
+}
+int joy_is_down(void)
+{
+	if(hatposition&SDL_HAT_DOWN)
+	{
+		return 1;
+	}
+	return 0;
+}
+int joy_is_left(void)
+{
+	if(hatposition&SDL_HAT_LEFT)
+	{
+		return 1;
+	}
+	return 0;
+}
+int joy_is_right(void)
+{
+	if(hatposition&SDL_HAT_RIGHT)
+	{
+		return 1;
+	}
+	return 0;
+}
+
+
+
 
 int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unused__))) {
 
@@ -256,6 +307,13 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 	chana[6]=127;
 	chana[5]=127;
 	chana[4]=127;
+	
+	
+	SDL_Init(SDL_INIT_JOYSTICK);
+
+	printf("joysticks: %i",SDL_NumJoysticks());
+	SDL_JoystickOpen(0);
+	SDL_JoystickEventState(SDL_ENABLE);
 
 	screen = SDL_SetVideoMode(LED_WIDTH*ZOOM,LED_HEIGHT*ZOOM,32, SDL_SWSURFACE | SDL_DOUBLEBUF);
 
@@ -271,6 +329,9 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 		SDL_Event ev;
 		while(SDL_PollEvent(&ev)) {
 			switch(ev.type) {
+				case SDL_JOYHATMOTION:
+					hatposition = ev.jhat.value;
+					break;
 				case SDL_QUIT:
 					running = 0;
 					break;

@@ -35,10 +35,17 @@ void invLedXY(uint8_t x,uint8_t  y);
 void Delay(uint16_t t);
 void getLedXY(uint8_t x, uint8_t y, uint8_t* red, uint8_t* green, uint8_t* blue);
 void setDelay(unsigned int t);
+void lcdFillRGB(uint8_t r,uint8_t g , uint8_t b);
 
 unsigned long long int get_clock(void);
 
 uint8_t chan[16], chana[16];
+
+
+int joy_is_up(void);
+int joy_is_down(void);
+int joy_is_left(void);
+int joy_is_right(void);
 
 #endif
 
