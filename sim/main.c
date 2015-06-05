@@ -295,25 +295,55 @@ int joy_is_right(void)
 #ifdef serial
 void write_frame(void)
 {
-	unsigned char c=0x23;
-	int ret = ftdi_write_data(ftdi, &c,1);
-	if (ret < 0)
-	{
-		fprintf(stderr,"write failed , error %d (%s)\n",ret, ftdi_get_error_string(ftdi));
-	}
+
+	uint32_t pixel=0;
+	
+	unsigned char buf[LED_HEIGHT*LED_WIDTH*3*2+1];
+				
+	buf[pixel++] = 0x23;
 
 	for(uint8_t y = 0;y<LED_HEIGHT;y++)
 	{
 		for(uint8_t x = 0;x<LED_WIDTH;x++)
 		{
+			for(int i=0;i<3;i++)
+			{
+				int pix = leds[y][x][i];
+
+				if(pix == 0x23)
+				{
+					buf[pixel++] = 0x65;
+					buf[pixel++] = 1;
+				}
+				else if(pix == 0x42)
+				{
+					buf[pixel++] = 0x65;
+					buf[pixel++] = 2;
+				}
+				else if(pix == 0x65)
+				{
+					buf[pixel++] = 0x65;
+					buf[pixel++] = 3;
+				}
+				else if(pix == 0x66)
+				{
+					buf[pixel++] = 0x65;
+					buf[pixel++] = 4;
+				}
+				else
+				{
+					buf[pixel++] = pix;
+				}
+			}
 		}
 	}
+
+	int ret = ftdi_write_data(ftdi, buf, pixel);
+	if (ret < 0)
+	{
+		fprintf(stderr,"write failed , error %d (%s)\n",ret, ftdi_get_error_string(ftdi));
+	}
 		
-//	ret = ftdi_write_data(ftdi, buf, 2304);
-//	if (ret < 0)
-//	{
-//		fprintf(stderr,"write failed , error %d (%s)\n",ret, ftdi_get_error_string(ftdi));
-//	}
 	usleep(2000);
 
 }
