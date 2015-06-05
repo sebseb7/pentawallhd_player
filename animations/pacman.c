@@ -36,8 +36,8 @@ static const int bot_b[4] = {128,255,0,255};
 
 struct pos_t
 {
-	int x;
-	int y;
+	signed int x;
+	signed int y;
 };
 
 struct bot_t
@@ -105,7 +105,7 @@ static void set_block(int8_t x,int8_t y,int8_t r,int8_t g,int8_t b)
 struct pos_t translate(struct pos_t start,int orientation)
 {
 	struct pos_t target;
-	
+
 	if(orientation==0)
 	{
 		target.x=start.x+1;
@@ -126,6 +126,15 @@ struct pos_t translate(struct pos_t start,int orientation)
 		target.x=start.x;
 		target.y=start.y-1;
 	}
+
+	if(target.y>20)
+		target.y=0;
+	if(target.x>20)
+		target.x=0;
+	if(target.x<0)
+		target.x=20;
+	if(target.y<0)
+		target.y=20;
 
 	return target;
 }
