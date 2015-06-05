@@ -11,6 +11,10 @@
 
 #include "keyboard.h"
 
+#ifdef serial
+#include "libftdi1/ftdi.h"
+static struct ftdi_context *ftdi;
+#endif
 
 
 int sdlpause = 0;
@@ -288,6 +292,33 @@ int joy_is_right(void)
 }
 
 
+#ifdef serial
+void write_frame(void)
+{
+	unsigned char c=0x23;
+	int ret = ftdi_write_data(ftdi, &c,1);
+	if (ret < 0)
+	{
+		fprintf(stderr,"write failed , error %d (%s)\n",ret, ftdi_get_error_string(ftdi));
+	}
+
+	for(uint8_t y = 0;y<LED_HEIGHT;y++)
+	{
+		for(uint8_t x = 0;x<LED_WIDTH;x++)
+		{
+		}
+	}
+		
+//	ret = ftdi_write_data(ftdi, buf, 2304);
+//	if (ret < 0)
+//	{
+//		fprintf(stderr,"write failed , error %d (%s)\n",ret, ftdi_get_error_string(ftdi));
+//	}
+	usleep(2000);
+
+}
+#endif
+
 
 
 int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unused__))) {
@@ -307,6 +338,63 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 	chana[6]=127;
 	chana[5]=127;
 	chana[4]=127;
+
+
+#ifdef serial
+
+	
+	
+	
+	int ret;
+	struct ftdi_version_info version;
+	if ((ftdi = ftdi_new()) == 0)
+	{
+		fprintf(stderr, "ftdi_new failed\n");
+		return EXIT_FAILURE;
+	}
+	version = ftdi_get_library_version();
+	printf("Initialized libftdi %s (major: %d, minor: %d, micro: %d, snapshot ver: %s)\n",
+			version.version_str, version.major, version.minor, version.micro,
+			version.snapshot_str);
+	if ((ret = ftdi_usb_open(ftdi, 0x0403, 0x6001)) < 0)
+	{
+		fprintf(stderr, "unable to open ftdi device: %d (%s)\n", ret, ftdi_get_error_string(ftdi));
+		ftdi_free(ftdi);
+		return EXIT_FAILURE;
+	}
+	// Read out FTDIChip-ID of R type chips
+	if (ftdi->type == TYPE_R)
+	{
+		unsigned int chipid;
+		printf("ftdi_read_chipid: %d\n", ftdi_read_chipid(ftdi, &chipid));
+		printf("FTDI chipid: %X\n", chipid);
+	}
+	ret = ftdi_set_line_property(ftdi, 8, STOP_BIT_1, NONE);
+	if (ret < 0)
+	{
+		fprintf(stderr, "unable to set line parameters: %d (%s)\n", ret, ftdi_get_error_string(ftdi));
+		exit(-1);
+	}
+	ret = ftdi_set_baudrate(ftdi, 500000);
+	if (ret < 0)
+	{
+		fprintf(stderr, "unable to set baudrate: %d (%s)\n", ret, ftdi_get_error_string(ftdi));
+		exit(-1);
+	}
+	
+		
+	unsigned char c=66;
+	ret = ftdi_write_data(ftdi, &c,1);
+	c=0;
+	ret = ftdi_write_data(ftdi, &c,1);
+	ret = ftdi_write_data(ftdi, &c,1);
+	ret = ftdi_write_data(ftdi, &c,1);
+	if (ret < 0)
+	{
+		fprintf(stderr,"write failed , error %d (%s)\n",ret, ftdi_get_error_string(ftdi));
+	}
+	usleep(200);
+#endif
 	
 	
 	SDL_Init(SDL_INIT_JOYSTICK);
@@ -401,6 +489,9 @@ int main(int argc __attribute__((__unused__)), char *argv[] __attribute__((__unu
 
 		
 		SDL_Flip(screen);
+#ifdef serial
+		write_frame();
+#endif
 
 
 		Uint32 now = SDL_GetTicks(); 

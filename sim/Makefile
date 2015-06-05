@@ -3,7 +3,7 @@ UNAME := $(shell uname)
 COMPILER = gcc
 
 
-FLAGS= -I. -I../firmware -Ilibs -lportmidi --std=gnu99 -Wall  -funsigned-char -Wundef -Wsign-compare  -Wstrict-prototypes  
+FLAGS= -I. -I../firmware -Ilibs -lportmidi --std=gnu99 -Wall  -funsigned-char -Wundef -Wsign-compare  -Wstrict-prototypes -lftdi1
 LDFLAGS=
 BINEXT=
 

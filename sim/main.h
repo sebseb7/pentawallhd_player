@@ -9,6 +9,8 @@ enum {
 	ZOOM = 30
 };
 
+
+#define serial
 #define PENTAWALLHD
 #define SIMULATOR
 
