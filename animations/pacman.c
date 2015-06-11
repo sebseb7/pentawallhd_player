@@ -30,9 +30,9 @@ static const char initial_field[21][21] = {
 static char field_dots[21][21];
 static char field_pups[21][21];
 
-static const int bot_r[4] = {255,128,255,0};
-static const int bot_g[4] = {0,0,128,128};
-static const int bot_b[4] = {128,255,0,255};
+static const int bot_r[4] = {205,128,190,0  };
+static const int bot_g[4] = {0  ,0  ,160,228};
+static const int bot_b[4] = {128,205,30 ,155};
 
 struct pos_t
 {
@@ -361,20 +361,20 @@ static uint8_t tick(void) {
 		{
 			if(field_dots[x][y]==1)
 			{
-				set_block(x,y,32,32,32);
+				set_block(x,y,32,100,32);
 			}
 			if(field_pups[x][y]==1)
 			{
-				set_block(x,y,64,64,64);
+				set_block(x,y,64,140,64);
 			}
 			if(initial_field[x][y]==0)
 			{
-				set_block(x,y,0,0,200);
+				set_block(x,y,20,20,170);
 			}
 		}
 
 	if(door==0)
-		set_block(DOOR_X,DOOR_Y,64,0,96);
+		set_block(DOOR_X,DOOR_Y,120,50,160);
 	
 	for(int i = 0;i<4;i++)
 	{
@@ -393,22 +393,22 @@ static uint8_t tick(void) {
 		{
 			if(pupmode%2)
 			{
-				r = 64;
+				r = 264;
 				g = 32;
 				b = 148;
 			}
 			else
 			{
 				r=32;
-				g=64;
-				b=148;
+				g=164;
+				b=248;
 			}
 		}
 		else if(pupmode)
 		{
 			if(pupmode%2)
 			{
-				r = 64;
+				r = 264;
 				g = 32;
 				b = 148;
 			}
