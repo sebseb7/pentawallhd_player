@@ -308,7 +308,7 @@ void write_frame(void)
 		{
 			for(int i=0;i<3;i++)
 			{
-				int pix = leds[y][x][i];
+				int pix = leds[LED_HEIGHT-y-1][x][i];
 
 				if(pix == 0x23)
 				{
